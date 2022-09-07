@@ -35,17 +35,19 @@ export class WhatclipAwsAppStack extends Stack {
 			runtime: lambda.Runtime.NODEJS_16_X,
 		};
 
-		const sqsLambda = new NodejsFunction(this, 'whatclip-db-to-sqs', {
-			entry: path.join(__dirname, '../lambdas/sqsLambda.ts'),
+		const dbToSqsLambda = new NodejsFunction(this, 'whatclip-db-to-sqs', {
+			entry: path.join(__dirname, '../lambdas/dbToSqsLambda.ts'),
 			timeout: Duration.seconds(60),
 			environment: {
 				PRIMARY_KEY: 'guildId',
 				TABLE_NAME: dynamoTable.tableName,
+				QUEUE_URL: sqsQueue.queueUrl,
 			},
 			...nodeJsFunctionProps,
 		});
 
-		dynamoTable.grantReadData(sqsLambda);
+		dynamoTable.grantReadData(dbToSqsLambda);
+		sqsQueue.grantSendMessages(dbToSqsLambda);
 
 		const discordLambda = new NodejsFunction(this, 'whatclip-sqs-to-discord', {
 			entry: path.join(__dirname, '../lambdas/discordLambda.ts'),
@@ -56,6 +58,7 @@ export class WhatclipAwsAppStack extends Stack {
 		discordLambda.addEventSource(
 			new SqsEventSource(sqsQueue, {
 				batchSize: 1,
+				enabled: false,
 			}),
 		);
 
