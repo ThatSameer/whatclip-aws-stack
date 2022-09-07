@@ -7,7 +7,7 @@ export const scanTable = async (tableName: string) => {
 	try {
 		const params = {
 			TableName: tableName,
-			FilterExpression: 'active = :true AND isAutoClipOn = :true AND webhookId <> :null AND webhookToken <> :null',
+			FilterExpression: 'active = :true AND isAutoClipOn = :true AND webhookId <> :null AND webhookToken <> :null AND streamerId <> :null',
 			ExpressionAttributeValues: {
 				':true': true,
 				':null': '',

@@ -8,11 +8,35 @@ export const getToken = async ({ clientId, clientSecret }) => {
 			grant_type: 'client_credentials',
 		});
 
-		// deconstruct this
-		return token;
+		const { data: { access_token } } = token;
+		return access_token;
 	}
 	catch (error) {
 		console.log(error);
-		error;
+		throw error;
+	}
+};
+
+export const getClips = async ({ token, clientId, broadcasterId, first, end, start }) => {
+	try {
+		const clips = await axios.get('https://api.twitch.tv/helix/clips', {
+			headers: {
+				'Authorization': `Bearer ${token}`,
+				'Client-Id': clientId,
+			},
+			params: {
+				broadcaster_id: broadcasterId,
+				first: first,
+				ended_at: end,
+				started_at: start,
+			},
+		});
+
+		const { data: { data } } = clips;
+		return data;
+	}
+	catch (error) {
+		console.log(error);
+		throw error;
 	}
 };
