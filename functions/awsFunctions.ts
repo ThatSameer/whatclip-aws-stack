@@ -14,20 +14,19 @@ export const scanTable = async (tableName: string) => {
 			},
 		};
 
-		return await db.scan(params).promise();
+		const scanResults = [];
+		let items;
+		do {
+			items = await db.scan(params).promise();
+			items.Items.forEach((item) => scanResults.push(item));
+			params.ExclusiveStartKey = items.LastEvaluatedKey;
+		} while (typeof items.LastEvaluatedKey != 'undefined');
 
-		// const scanResults = [];
-		// let items;
-		// do {
-		// 	items = await db.scan(params).promise();
-		// 	items.Items.forEach((item) => scanResults.push(item));
-		// 	params.ExclusiveStartKey = items.LastEvaluatedKey;
-		// } while (typeof items.LastEvaluatedKey != 'undefined');
-
-		// return scanResults;
+		return scanResults;
 	}
 	catch (error) {
 		console.log(error);
+		throw error;
 	}
 };
 
@@ -42,5 +41,6 @@ export const sendSqs = async ({ messageBody, queueUrl }) => {
 	}
 	catch (error) {
 		console.log(error);
+		throw error;
 	}
 };

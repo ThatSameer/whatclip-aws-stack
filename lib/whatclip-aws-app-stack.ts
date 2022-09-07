@@ -6,6 +6,8 @@ import * as path from 'path';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
+import { config } from 'dotenv';
+config();
 
 export class WhatclipAwsAppStack extends Stack {
 	constructor(scope: Construct, id: string, props?: StackProps) {
@@ -52,13 +54,16 @@ export class WhatclipAwsAppStack extends Stack {
 		const discordLambda = new NodejsFunction(this, 'whatclip-sqs-to-discord', {
 			entry: path.join(__dirname, '../lambdas/discordLambda.ts'),
 			timeout: Duration.seconds(90),
+			environment: {
+				CLIENT_ID: process.env.TWITCH_CLIENT_ID!,
+				CLIENT_SECRET: process.env.TWITCH_CLIENT_SECRET!,
+			},
 			...nodeJsFunctionProps,
 		});
 
 		discordLambda.addEventSource(
 			new SqsEventSource(sqsQueue, {
 				batchSize: 1,
-				enabled: false,
 			}),
 		);
 

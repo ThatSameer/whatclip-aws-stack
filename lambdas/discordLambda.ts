@@ -1,16 +1,22 @@
+import * as AWS from 'aws-sdk';
 import { SQSEvent } from 'aws-lambda';
+import { getToken } from '../functions/axiosFunctions';
+
+const CLIENT_ID = process.env.CLIENT_ID || '';
+const CLIENT_SECRET = process.env.CLIENT_SECRET || '';
 
 export async function handler(event: SQSEvent): Promise<any> {
-	const messages = event.Records.map(record => {
-		const body = JSON.parse(record.body) as { Subject: string; Message: string };
-
-		return { subject: body.Subject, message: body.Message };
+	const message = event.Records.forEach(record => {
+		const { body } = record;
+		return body;
 	});
 
-	console.log('messages 👉', JSON.stringify(messages, null, 2));
+	// parse this
+	console.log(message);
 
-	return {
-		body: JSON.stringify({ messages }),
-		statusCode: 200,
-	};
+	const token = await getToken({
+		clientId: CLIENT_ID,
+		clientSecret: CLIENT_SECRET,
+	});
+	console.log(token?.data.access_token);
 }
