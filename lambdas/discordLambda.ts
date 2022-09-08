@@ -27,7 +27,7 @@ export async function handler(event: SQSEvent): Promise<any> {
 			start: time.yesterday,
 		});
 
-		if (!clips) {
+		if (clips.length === 0) {
 			console.log(`no clips found for ${message.streamerId}`);
 			return;
 		}
@@ -39,7 +39,7 @@ export async function handler(event: SQSEvent): Promise<any> {
 				await sendWebhook({
 					webhookId: message.webhookId,
 					webhookToken: message.webhookToken,
-					content: `**${element.title}** • Clipped by ${element.creator_name}\n${element.url}`,
+					content: `🎬 **${element.creator_name}** ${element.url}`,
 				});
 
 				await sleep(3500);
@@ -52,5 +52,4 @@ export async function handler(event: SQSEvent): Promise<any> {
 	catch (error) {
 		return;
 	}
-
 }

@@ -5,10 +5,9 @@ const TABLE_NAME = process.env.TABLE_NAME || '';
 const QUEUE_URL = process.env.QUEUE_URL || '';
 
 export const handler = async (): Promise<any> => {
-
 	try {
 		const dbItems = await scanTable(TABLE_NAME);
-		if (!dbItems) return;
+		if (dbItems.length === 0) return;
 
 		for (let index = 0; index < dbItems.length; index++) {
 			const item = dbItems[index];

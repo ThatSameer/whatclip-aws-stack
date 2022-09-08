@@ -23,6 +23,7 @@ export class WhatclipAwsAppStack extends Stack {
 
 		const sqsQueue = new sqs.Queue(this, 'whatclip-sqs', {
 			queueName: 'whatclip-sqs',
+			deliveryDelay: Duration.seconds(10),
 			visibilityTimeout: Duration.seconds(120),
 			retentionPeriod: Duration.days(1),
 		});
