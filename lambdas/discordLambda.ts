@@ -1,34 +1,56 @@
 import * as AWS from 'aws-sdk';
 import { SQSEvent } from 'aws-lambda';
-import { getClips, getToken } from '../functions/axiosFunctions';
-import { getDay } from '../functions/dateFunctions';
+import { getClips, getToken, sendWebhook } from '../functions/axiosFunctions';
+import { getDay, sleep } from '../functions/dateFunctions';
 
 const CLIENT_ID = process.env.CLIENT_ID || '';
 const CLIENT_SECRET = process.env.CLIENT_SECRET || '';
 
 export async function handler(event: SQSEvent): Promise<any> {
-	const message = event.Records.forEach(record => {
-		const { body } = record;
-		return body;
-	});
+	const { body } = event.Records[0];
+	const message = JSON.parse(body);
 
-	// parse this
-	console.log(message);
+	try {
+		const token = await getToken({
+			clientId: CLIENT_ID,
+			clientSecret: CLIENT_SECRET,
+		});
 
-	const time = await getDay();
+		const time = await getDay();
 
-	const token = await getToken({
-		clientId: CLIENT_ID,
-		clientSecret: CLIENT_SECRET,
-	});
+		const clips = await getClips({
+			token: token,
+			clientId: CLIENT_ID,
+			broadcasterId: message.streamerId,
+			first: 10,
+			end: time.now,
+			start: time.yesterday,
+		});
 
-	const clips = await getClips({
-		token: token,
-		clientId: CLIENT_ID,
-		broadcasterId: '500128827',
-		first: 10,
-		end: time.now,
-		start: time.yesterday,
-	});
-	console.log(clips);
+		if (!clips) {
+			console.log(`no clips found for ${message.streamerId}`);
+			return;
+		}
+
+		for (let index = 0; index < clips.length; index++) {
+			try {
+				const element = clips[index];
+
+				await sendWebhook({
+					webhookId: message.webhookId,
+					webhookToken: message.webhookToken,
+					content: `**${element.title}** • Clipped by ${element.creator_name}\n${element.url}`,
+				});
+
+				await sleep(3500);
+			}
+			catch (error) {
+				break;
+			}
+		}
+	}
+	catch (error) {
+		return;
+	}
+
 }

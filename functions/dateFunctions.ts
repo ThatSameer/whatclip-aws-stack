@@ -9,3 +9,5 @@ export const getDay = async () => {
 		yesterday,
 	};
 };
+
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

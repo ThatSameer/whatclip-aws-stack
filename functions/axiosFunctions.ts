@@ -40,3 +40,17 @@ export const getClips = async ({ token, clientId, broadcasterId, first, end, sta
 		throw error;
 	}
 };
+
+export const sendWebhook = async ({ webhookId, webhookToken, content }) => {
+	try {
+		const sendMessage = await axios.post(`https://discord.com/api/v10/webhooks/${webhookId}/${webhookToken}`, {
+			content: content,
+		});
+
+		return sendMessage;
+	}
+	catch (error) {
+		console.log(error);
+		throw error;
+	}
+};
