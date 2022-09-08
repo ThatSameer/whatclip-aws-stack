@@ -5,6 +5,8 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as path from 'path';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import { Construct } from 'constructs';
+import events = require('aws-cdk-lib/aws-events');
+import targets = require('aws-cdk-lib/aws-events-targets');
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { config } from 'dotenv';
 config();
@@ -68,6 +70,9 @@ export class WhatclipAwsAppStack extends Stack {
 			}),
 		);
 
-
+		const rule = new events.Rule(this, 'whatclip-rule', {
+			schedule: events.Schedule.cron({ minute: '0', hour: '22' }),
+		});
+		rule.addTarget(new targets.LambdaFunction(dbToSqsLambda));
 	}
 }
