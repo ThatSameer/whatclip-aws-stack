@@ -5,13 +5,17 @@ import { getDay, sleep } from '../functions/dateFunctions';
 
 const CLIENT_ID = process.env.CLIENT_ID || '';
 const CLIENT_SECRET = process.env.CLIENT_SECRET || '';
+const TOKEN_URL = process.env.TOKEN_URL || '';
+const CLIPS_URL = process.env.CLIPS_URL || '';
+const WEBHOOK_URL = process.env.POST_WEBHOOK_URL || '';
 
-export async function handler(event: SQSEvent): Promise<any> {
+export async function handler(event: SQSEvent): Promise<void> {
 	const { body } = event.Records[0];
 	const message = JSON.parse(body);
 
 	try {
 		const token = await getToken({
+			tokenUrl: TOKEN_URL,
 			clientId: CLIENT_ID,
 			clientSecret: CLIENT_SECRET,
 		});
@@ -19,6 +23,7 @@ export async function handler(event: SQSEvent): Promise<any> {
 		const time = await getDay();
 
 		const clips = await getClips({
+			clipsUrl: CLIPS_URL,
 			token: token,
 			clientId: CLIENT_ID,
 			broadcasterId: message.streamerId,
@@ -28,7 +33,7 @@ export async function handler(event: SQSEvent): Promise<any> {
 		});
 
 		if (clips.length === 0) {
-			console.log(`no clips found for ${message.streamerId}`);
+			console.log(`No clips found for ${message.streamerId}`);
 			return;
 		}
 
@@ -37,6 +42,7 @@ export async function handler(event: SQSEvent): Promise<any> {
 				const element = clips[index];
 
 				await sendWebhook({
+					webhookUrl: WEBHOOK_URL,
 					webhookId: message.webhookId,
 					webhookToken: message.webhookToken,
 					content: `🎬 **${element.creator_name}** ${element.url}`,
@@ -45,11 +51,13 @@ export async function handler(event: SQSEvent): Promise<any> {
 				await sleep(3500);
 			}
 			catch (error) {
+				console.log(error);
 				break;
 			}
 		}
 	}
 	catch (error) {
+		console.log(error);
 		return;
 	}
 }

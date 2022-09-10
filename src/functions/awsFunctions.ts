@@ -25,7 +25,6 @@ export const scanTable = async (tableName: string) => {
 		return scanResults;
 	}
 	catch (error) {
-		console.log(error);
 		throw error;
 	}
 };
@@ -40,7 +39,6 @@ export const sendSqs = async ({ messageBody, queueUrl }) => {
 		return await sqs.sendMessage(params).promise();
 	}
 	catch (error) {
-		console.log(error);
 		throw error;
 	}
 };

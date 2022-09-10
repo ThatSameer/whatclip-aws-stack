@@ -7,7 +7,13 @@ const QUEUE_URL = process.env.QUEUE_URL || '';
 export const handler = async (): Promise<any> => {
 	try {
 		const dbItems = await scanTable(TABLE_NAME);
-		if (dbItems.length === 0) return;
+		if (dbItems.length === 0) {
+			console.log('No items found with matched conditions');
+			return {
+				statusCode: 200,
+				body: JSON.stringify('No items found with matched conditions'),
+			};
+		}
 
 		for (let index = 0; index < dbItems.length; index++) {
 			const item = dbItems[index];
@@ -19,6 +25,7 @@ export const handler = async (): Promise<any> => {
 		}
 	}
 	catch (error) {
+		console.log(error);
 		return {
 			statusCode: 500,
 			body: JSON.stringify(error),

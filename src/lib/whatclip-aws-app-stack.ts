@@ -20,11 +20,9 @@ export class WhatclipAwsAppStack extends Stack {
 				name: 'guildId',
 				type: AttributeType.STRING,
 			},
-			tableName: 'whatclip-db',
 		});
 
 		const sqsQueue = new sqs.Queue(this, 'whatclip-sqs', {
-			queueName: 'whatclip-sqs',
 			deliveryDelay: Duration.seconds(10),
 			visibilityTimeout: Duration.seconds(120),
 			retentionPeriod: Duration.days(1),
@@ -33,10 +31,9 @@ export class WhatclipAwsAppStack extends Stack {
 		const nodeJsFunctionProps: NodejsFunctionProps = {
 			bundling: {
 				externalModules: [
-					'aws-sdk', // Use the 'aws-sdk' available in the Lambda runtime
+					'aws-sdk',
 				],
 			},
-			retryAttempts: 0,
 			runtime: lambda.Runtime.NODEJS_16_X,
 		};
 
@@ -57,9 +54,13 @@ export class WhatclipAwsAppStack extends Stack {
 		const discordLambda = new NodejsFunction(this, 'whatclip-sqs-to-discord', {
 			entry: path.join(__dirname, '../lambdas/discordLambda.ts'),
 			timeout: Duration.seconds(90),
+			retryAttempts: 0,
 			environment: {
 				CLIENT_ID: process.env.TWITCH_CLIENT_ID!,
 				CLIENT_SECRET: process.env.TWITCH_CLIENT_SECRET!,
+				TOKEN_URL: process.env.TWITCH_TOKEN_URL!,
+				CLIPS_URL: process.env.TWITCH_CLIPS_URL!,
+				POST_WEBHOOK_URL: process.env.DISCORD_POST_WEBHOOK_URL!,
 			},
 			...nodeJsFunctionProps,
 		});

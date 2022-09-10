@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-export const getToken = async ({ clientId, clientSecret }) => {
+export const getToken = async ({ tokenUrl, clientId, clientSecret }) => {
 	try {
-		const token = await axios.post('https://id.twitch.tv/oauth2/token', {
+		const token = await axios.post(tokenUrl, {
 			client_id: clientId,
 			client_secret: clientSecret,
 			grant_type: 'client_credentials',
@@ -12,14 +12,13 @@ export const getToken = async ({ clientId, clientSecret }) => {
 		return access_token;
 	}
 	catch (error) {
-		console.log(error);
 		throw error;
 	}
 };
 
-export const getClips = async ({ token, clientId, broadcasterId, first, end, start }) => {
+export const getClips = async ({ clipsUrl, token, clientId, broadcasterId, first, end, start }) => {
 	try {
-		const clips = await axios.get('https://api.twitch.tv/helix/clips', {
+		const clips = await axios.get(clipsUrl, {
 			headers: {
 				'Authorization': `Bearer ${token}`,
 				'Client-Id': clientId,
@@ -36,21 +35,19 @@ export const getClips = async ({ token, clientId, broadcasterId, first, end, sta
 		return data;
 	}
 	catch (error) {
-		console.log(error);
 		throw error;
 	}
 };
 
-export const sendWebhook = async ({ webhookId, webhookToken, content }) => {
+export const sendWebhook = async ({ webhookUrl, webhookId, webhookToken, content }) => {
 	try {
-		const sendMessage = await axios.post(`https://discord.com/api/v10/webhooks/${webhookId}/${webhookToken}`, {
+		const sendMessage = await axios.post(`${webhookUrl}/${webhookId}/${webhookToken}`, {
 			content: content,
 		});
 
 		return sendMessage;
 	}
 	catch (error) {
-		console.log(error);
 		throw error;
 	}
 };
